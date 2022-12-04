@@ -1,4 +1,4 @@
-# Make Telegramm bot for Issa MGU
+# Make Telegramm bot for MGU
 #By Osin Alexey, @alexey_addams
 from constants import rp
 from aiogram import executor
