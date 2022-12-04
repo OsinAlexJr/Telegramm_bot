@@ -21,5 +21,3 @@ if __name__ == '__main__':
 
 #BETA version
 
-#TODO: И не забыть, что программа одна и отвечает сразу на все запросы
-#TODO: Ну почти:) сайт: https://www.pythonanywhere.com/user/Aelex/
