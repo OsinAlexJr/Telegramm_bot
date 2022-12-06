@@ -10,9 +10,15 @@ import sys, asyncio
 # Консоль со всеми действиями
 class Cansole():
     def __init__(self): # Конструктор
-        self.button_go = InlineKeyboardButton('Контакты', callback_data='go', url='https://iaas.msu.ru/about/contacts/')
-        self.button_Info = InlineKeyboardButton('Руководители университета', callback_data='info', url='https://iaas.msu.ru/about/administration/')
-        self.button_re = InlineKeyboardButton('Перевестись на бесплатное обучение', callback_data='re', url='https://iaas.msu.ru/education/perehod-studentov-s-platnogo-obucheniya-na-besplatnoe/')
+        self.user = InlineKeyboardButton("Для поступающих", callback_data='user')
+        self.student = InlineKeyboardButton('Для студентов', callback_data='students')
+        self.button_magistr = InlineKeyboardButton('Для магистратуры', callback_data="magistr")
+        self.button_contact = InlineKeyboardButton('Контакты', callback_data='go')
+        self.button_admins = InlineKeyboardButton('Дни открытых дверей на 2023 год', callback_data="info")
+        self.button_about_free_studies = InlineKeyboardButton("Как перевестись на бесплатное обучение?", callback_data="return")
+        self.button_adress = InlineKeyboardButton("Адрес", callback_data='map', url="https://www.google.com/maps/place/%D1%83%D0%BB.+%D0%9C%D0%BE%D1%85%D0%BE%D0%B2%D0%B0%D1%8F,+11,+%D1%81%D1%82%D1%80.+1,+%D0%9C%D0%BE%D1%81%D0%BA%D0%B2%D0%B0,+125009/@55.7553848,37.6095687,17z/data=!3m1!4b1!4m5!3m4!1s0x46b54a503d4131f9:0xb89653ca2757f711!8m2!3d55.7553848!4d37.6117574?hl=ru")
+        self.button_more_info = InlineKeyboardButton("Больше информации", callback_data="new", url="https://iaas.msu.ru/abiturientam/abiturientam-opendoors/")
+
         self.flag = False
         self.security = False
         self.security_id = None
@@ -27,16 +33,50 @@ class Cansole():
 
 
     def start(self) -> None:#Команда старт в теллеграме
-        keyBoard_in = InlineKeyboardMarkup().add(self.button_go, self.button_Info)
-        keyBoard_in.row(self.button_re)
+        main_key = InlineKeyboardMarkup().add(self.user, self.student, self.button_magistr)
+        keyBoard_user = InlineKeyboardMarkup().add(self.button_contact, self.button_admins)
+        keyBoard_students = InlineKeyboardMarkup().add(self.button_about_free_studies)
+        keys = InlineKeyboardMarkup(row_width=2).add(self.button_adress)
+        key_in = InlineKeyboardMarkup().add(self.button_more_info)
 
-        @rp.callback_query_handler(lambda c: c.data)
+        @rp.callback_query_handler(lambda c: (c.data == 'magistr'))
+        async def go(cq: types.CallbackQuery):
+            await bot.answer_callback_query(cq.id)
+            await bot.send_message(cq.from_user.id, "Информация для магистратуры")
+
+        @rp.callback_query_handler(lambda c: (c.data == 'user'))
+        async def go(cq: types.CallbackQuery):
+            await bot.answer_callback_query(cq.id)
+            await bot.send_message(cq.from_user.id, "Информация для поступающих", reply_markup=keyBoard_user)
+
+        @rp.callback_query_handler(lambda c: (c.data == 'students'))
+        async def go(cq: types.CallbackQuery):
+            await bot.answer_callback_query(cq.id)
+            await bot.send_message(cq.from_user.id, "Информация для учащихся", reply_markup=keyBoard_students)
+
+        @rp.callback_query_handler(lambda c: (c.data == 'return'))
+        async def go(cq: types.CallbackQuery):
+            await bot.answer_callback_query(cq.id)
+            await bot.send_message(cq.from_user.id, "Перевод с любого факультета обсуждается с администрацией. Но обязательно нужно узнать есть ли свободные бесплатные места (это можно узнать здесь 👉🏼 http://edu.msu.ru/plata/). За помощью можете обращаться в институтский совет студентов(Просто напишите в чат боте вопрос) или в профсоюз по номеру телефона `+7 (495) 629-43-49`. Студентам 1 курса нельзя перевестись на бесплатное обучение:(.", parse_mode="MARKDOWN")
+
+        @rp.callback_query_handler(lambda c: (c.data == 'new'))
         async def go(cq: types.CallbackQuery):
             await bot.answer_callback_query(cq.id)
 
-        @rp.callback_query_handler(lambda c: c.data)
-        async def info(cq=types.CallbackQuery):
+        @rp.callback_query_handler(lambda c: (c.data == 'info'))
+        async def go(cq: types.CallbackQuery):
             await bot.answer_callback_query(cq.id)
+            await bot.send_message(cq.from_user.id, "Дни открытых дверей:\n📆18 мая 2023 год 19:00\n📆20 марта 2023 13:00 - 15:00\n📆20 февраля 13:00 - 15:00(для иностранных поступающих)", reply_markup=key_in)
+
+        @rp.callback_query_handler(lambda c: (c.data == 'map'))
+        async def go(cq: types.CallbackQuery):
+            await bot.answer_callback_query(cq.id)
+
+        @rp.callback_query_handler(lambda c: (c.data == 'go'))
+        async def go(cq: types.CallbackQuery):
+            await bot.answer_callback_query(cq.id)
+            await bot.send_message(cq.from_user.id, "☎Телефон: `+7 (495) 629-43-49`\n📩Почта: `office@iaas.msu.ru`\n📫Адрес: 125009, г. Москва, ул. Моховая, д. 11, стр. 1(Ссылка на google maps👇)", reply_markup=keys, parse_mode="MARKDOWN")
+
 
         @rp.message_handler(commands=['start'])
         async def procces_to_start_bot(mg=types.Message):
@@ -44,7 +84,7 @@ class Cansole():
             Id = mg.from_user.id
             object = Person(Id)
             logging.info(f'{Id} {Name} {time.asctime()}')
-            await bot.send_message(Id, f'Hello, {Name}!\n{self.QUASTION}', reply_markup=keyBoard_in)
+            await bot.send_message(Id, f'Hello, {Name}!\n{self.QUASTION}', reply_markup=main_key)
             if object():
                 await bot.send_message(Id, f'{self.MAIN_QUASTION}')
             return None
@@ -131,7 +171,7 @@ class Cansole():
             self.Password = object()
             self.security = True
             self.security_id = mg.from_user.id
-            await bot.send_message(ADMINS[1], f'Пароль `{self.Password}`', parse_mode='MARKDOWN')
+            await bot.send_message(ADMINS[1], f'Пароль `{self.Password}`', parse_mode='MARKDOWN ')
             await bot.send_message(self.security_id, 'Что бы получить токен введите пороль, посланный администратору.')
 
 
@@ -185,33 +225,7 @@ class Cansole():
                 self.MAIN_QUASTION = MAIN_QUASTION
                 self.GO_title = 'Hi'
                 self.remove_flag = False
-                ADMINS = [1313772736, 1918414556]
+                ADMINS = ["Your id"]
 
 
-
-# class Button():
-#     def __init__(self):
-#         self.new_button = []
-#
-#     def __len__(self):
-#         return len(self.new_button)
-#
-#     def __del__(self, index):
-#         del self.new_button[index]
-#
-#     def append(self, elem):
-#         self.new_button.append(elem)
-#
-#     def create(self, object: Cansole, atributes: tuple) -> None:
-#         @rp.message_handler(commands=['new_buttom'])
-#         async def create_buttom(mg=types.Message):
-#             if Person(mg.from_user.id):
-#                 bot.send_message(mg.from_user.id, 'Чтобы добавить или изменить кнопку следуйте этим првавилам: укажите номер кнопки, действие которое хотите провести над ней(del/new/old\nСлова кноаки, Адреесс на который она может переводить вас или текст который возвращает(Или то или то не вместе')
-#                 object.atributes[0] = True
-#                 object.atributes[1] = mg.from_user.id
-#     def get(self):
-#         pass
-#
-#     def pack(self):
-#         pass
 
